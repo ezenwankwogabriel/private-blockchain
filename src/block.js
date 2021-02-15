@@ -39,20 +39,20 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
-            let previousBlockHash = self.previousBlockHash;
-                                            
             // Recalculate the previousBlockHash of the Block
-            let currentpreviousBlockHash = SHA256(self)
             // Comparing if the previousBlockHashes changed
-            if (currentpreviousBlockHash === previousBlockHash) {
-                resolve(true)
-            } else {
-                reject(false)
-            }
             // Returning the Block is not valid
-            
             // Returning the Block is valid
-
+            let currentHash = self.hash;
+            self.getBData().then(data => {
+              let newBlock = new Block(data);
+              newBlock.previousBlockHash = self.previousBlockHash;
+              newBlock.height = self.height;
+              newBlock.time = self.time;
+              const calculatedHash = SHA256(JSON.stringify(newBlock)).toString();
+              
+              resolve(currentHash === calculatedHash)
+            }).catch(err => reject(err));
         });
     }
 
@@ -67,15 +67,14 @@ class Block {
      */
     getBData() {
         // Getting the encoded data saved in the Block
-        const data = self;
+        const self = this;
         // Decoding the data to retrieve the JSON representation of the object
-        const decoded = hex2ascii(JSON.parse(data))
+        const data = hex2ascii(self.body)
         // Parse the data to an object to be retrieve.
-        return Promise.resolve(decoded)
+        return Promise.resolve(JSON.parse(data))
         // Resolve with the data if the object isn't the Genesis block
 
     }
-
 }
 
 module.exports.Block = Block;                    // Exposing the Block class as a module
